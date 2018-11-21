@@ -120,7 +120,7 @@ namespace BudgetApplication.Controllers
 
                 var houseHoldInvites = new HouseHoldInvites();
                 houseHoldInvites.HouseHoldId = household.Id;
-                houseHoldInvites.InvitedUserId = invitedUser.Id;
+                //houseHoldInvites.InvitedUserId = invitedUser.Id;
                 db.HouseHoldInvites.Add(houseHoldInvites);
                 db.SaveChanges();
                 return Ok();

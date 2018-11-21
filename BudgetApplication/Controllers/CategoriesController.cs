@@ -72,7 +72,7 @@ namespace BudgetApplication.Controllers
 
         // POST: api/Categories
         [ResponseType(typeof(Categories))]
-        public IHttpActionResult PostCategories(Categories categories)
+        public IHttpActionResult PostCategories(CreateCategoryBindingModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -80,47 +80,44 @@ namespace BudgetApplication.Controllers
             }
 
             var creatorId = User.Identity.GetUserId();
-            var household = db.Categories.Where(p => p.HouseHoldId == categories.HouseHoldId).FirstOrDefault();
-            db.Categories.Add(categories);
-            db.SaveChanges();
+            var household = db.HouseHolds.Where(p => p.Id == model.HouseHoldId).FirstOrDefault();
+            if (household == null)
+            {
+                return NotFound();
+            }
+            if (household.CreatorId == creatorId ||
+                household.HouseHoldUser.Any(p => p.Id == creatorId))
+            {
+                var category = new Categories();
+                category.Name = model.Name;
+                category.HouseHoldId = model.HouseHoldId;
 
-            return CreatedAtRoute("DefaultApi", new { id = categories.Id }, categories);
+                db.Categories.Add(category);
+                db.SaveChanges();
+
+                return Ok();
+            }
+            else
+            {
+                return BadRequest("Not authorized");
+            }
         }
 
         [HttpGet]
         [ResponseType(typeof(Categories))]
-        public IHttpActionResult ViewCategories(int id)
+        public IHttpActionResult ViewCategories()
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var category = db.Categories
-                .Include(p => p.HouseHold)
-                .FirstOrDefault(p => p.Id == id);
-
-            var household = db.HouseHolds.Where(p => p.Id== category.HouseHoldId).FirstOrDefault();
-
-            if (category == null)
-            {
-                return NotFound();
-            }
-            var houseHold = db.HouseHolds
-                .FirstOrDefault(p => p.Id == id);
             var userId = User.Identity.GetUserId();
-            if (houseHold.CreatorId == userId ||
-                houseHold.HouseHoldUser.Any(p => p.Id == userId))
-            {
-                var categoryViewModel = new CategoryViewModel();
-                categoryViewModel.Id = category.Id;
-                categoryViewModel.Name = category.Name;
-                categoryViewModel.HouseHoldName = household.Name;
-                return Ok(categoryViewModel);
-            }
-            else
-            {
-                return BadRequest("unauthorized");
-            }
+            var category = db.Categories.Include(p => p.Name).Include(p => p.HouseHoldId)
+                .Select(p => new ViewCategoryViewModel
+                {
+                    Name = p.Name,
+                }).ToList();
+            return Ok(category);
         }
 
         // DELETE: api/Categories/5

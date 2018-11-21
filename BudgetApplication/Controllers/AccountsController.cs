@@ -122,7 +122,8 @@ namespace BudgetApplication.Controllers
 
             var creatorId = User.Identity.GetUserId();
             var houseHold = db.HouseHolds.Where(p => p.Id == accounts.HouseHoldId);
-            if(houseHold == null){
+            if (houseHold == null)
+            {
                 return BadRequest("No household found");
             };
             var account = new Accounts();
@@ -137,28 +138,21 @@ namespace BudgetApplication.Controllers
 
         [HttpGet]
         [ResponseType(typeof(Accounts))]
-        public IHttpActionResult ViewAccounts(int id)
+        public IHttpActionResult ViewAccounts()
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var account = db.Accounts
-                 .Include(p => p.HouseHold)
-                 .FirstOrDefault(p => p.Id == id);
-
-            var household = db.HouseHolds.Where(p => p.Id == account.HouseHoldId).FirstOrDefault();
-           
-            if (account == null)
-            {
-                return NotFound();
-            }
             var userId = User.Identity.GetUserId();
-            var accountViewModel = new AccountViewModel();
-            accountViewModel.Id = account.Id;
-            accountViewModel.Name = account.Name;
-            accountViewModel.HouseHoldName = household.Name;
-            return Ok(accountViewModel);
+            var accounts = db.Accounts.Include(p => p.Name).Include(p => p.Balance)
+                .Select(p => new ViewAccountViewModel
+                {
+                    Id = p.Id, 
+                    Name = p.Name,
+                    Balance = p.Balance
+                }).ToList();
+            return Ok(accounts);
         }
 
         // DELETE: api/Accounts/5

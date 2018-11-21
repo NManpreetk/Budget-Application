@@ -250,6 +250,7 @@
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\Categories.cs" />
     <Compile Include="Models\CategoryViewModel.cs" />
+    <Compile Include="Models\CreateCategoryBindingModel.cs" />
     <Compile Include="Models\CreateHouseHoldViewModel.cs" />
     <Compile Include="Models\HouseHoldInvites.cs" />
     <Compile Include="Models\HouseHolds.cs" />
@@ -259,6 +260,8 @@
     <Compile Include="Models\Login.cs" />
     <Compile Include="Models\PersonalEmailService.cs" />
     <Compile Include="Models\Transactions.cs" />
+    <Compile Include="Models\ViewAccountViewModel.cs" />
+    <Compile Include="Models\ViewCategoryViewModel.cs" />
     <Compile Include="Models\ViewHouseHoldViewModel.cs" />
     <Compile Include="Models\ViewUserPerHouseHoldViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
