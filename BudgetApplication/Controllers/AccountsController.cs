@@ -216,9 +216,39 @@ namespace BudgetApplication.Controllers
                 return BadRequest("Not authorized");
             }
         }
-    
 
-    protected override void Dispose(bool disposing)
+        [HttpGet]
+        [ResponseType(typeof(Accounts))]
+        public IHttpActionResult View(int id)
+        {
+            var userId = User.Identity.GetUserId();
+
+            var houseHold = db.HouseHolds
+                .FirstOrDefault(p => p.Id == id);
+
+            //if (houseHold.CreatorId == userId ||
+            //    houseHold.HouseHoldUser.Any(p => p.Id == userId))
+            //{
+                var accounts = houseHold.Accounts;
+
+                var bankAccountsViewModel = accounts
+                    .Select(p => new ViewAccountViewModel
+                    {
+                        Id = p.Id,
+                        Name = p.Name,
+                        Balance = p.Balance,
+                        NumberOfTransactions = p.Transactions.Count()
+                    }).ToList();
+
+                return Ok(bankAccountsViewModel);
+            //}
+            //else
+            //{
+            //    return BadRequest("Not authorized");
+            //}
+        }
+
+        protected override void Dispose(bool disposing)
         {
             if (disposing)
             {

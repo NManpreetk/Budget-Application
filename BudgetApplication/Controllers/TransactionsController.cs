@@ -113,46 +113,46 @@ namespace BudgetApplication.Controllers
 
         // POST: api/Transactions
         [ResponseType(typeof(Transactions))]
-        public IHttpActionResult PostTransactions(Transactions transactions)
+        public IHttpActionResult PostTransactions(CreateTransactionBindingModel model)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            var creatorId = User.Identity.GetUserId();
+            var EnteredById = User.Identity.GetUserId();
             //var transaction = db.Transactions.Where(p => p.Id == transactions.Id).FirstOrDefault();
-            var account = db.Accounts.Where(p => p.Id == transactions.AccountId).FirstOrDefault();
+            var account = db.Accounts.Where(p => p.Id == model.AccountId).FirstOrDefault();
             if (account == null)
             {
                 return BadRequest("Account not found");
             }
             var houseHold = account.HouseHold;
 
-            if (houseHold.CreatorId == creatorId ||
-                houseHold.HouseHoldUser.Any(p => p.Id == creatorId))
-            {
+            //if (houseHold.CreatorId == EnteredById ||
+            //    houseHold.HouseHoldUser.Any(p => p.Id == EnteredById))
+            //{
                 var transaction = new Transactions();
-                transaction.AccountId = transactions.AccountId;
-                transaction.Description = transactions.Description;
-                transaction.Date = transactions.Date;
-                transaction.Amount = transactions.Amount;
-                transaction.CategoryId = transactions.CategoryId;
+                transaction.AccountId = model.AccountId;
+                transaction.Description = model.Description;
+                transaction.Date = model.Date;
+                transaction.Amount = model.Amount;
+                transaction.CategoryId = model.CategoryId;
                 transaction.IsVoided = false;
-                transaction.EnteredById = creatorId;
+                transaction.EnteredById = EnteredById;
                 account.Balance += transaction.Amount;
-                db.Transactions.Add(transactions);
+                db.Transactions.Add(transaction);
                 db.SaveChanges();
-                return Ok();
-            }
-            else
-            {
-                return BadRequest("Not authorized");
-            }
+                return Ok("Success");
+            //}
+            //else
+            //{
+            //    return BadRequest("Not authorized");
+            //}
         }
 
         [HttpPut]
         [ResponseType(typeof(Transactions))]
-        public IHttpActionResult VoidTransaction(int id)
+        public IHttpActionResult VoidTransaction(VoidTransactionViewModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -161,7 +161,7 @@ namespace BudgetApplication.Controllers
             var userId = User.Identity.GetUserId();
 
             var transaction = db.Transactions
-                .FirstOrDefault(p => p.Id == id);
+                .FirstOrDefault(p => p.Id == model.Id);
 
             if (transaction == null)
             {
@@ -170,20 +170,20 @@ namespace BudgetApplication.Controllers
 
             var houseHold = transaction.Account.HouseHold;
 
-            if (houseHold.CreatorId == userId ||
-                houseHold.HouseHoldUser.Any(p => p.Id == userId))
-            {
-                transaction.Account.Balance -= transaction.Amount;
+            //if (houseHold.CreatorId == userId ||
+            //    houseHold.HouseHoldUser.Any(p => p.Id == userId))
+            //{
+               transaction.Account.Balance -= transaction.Amount;
                 transaction.IsVoided = true;
 
                 db.SaveChanges();
 
                 return Ok();
-            }
-            else
-            {
-                return BadRequest("Not authorized");
-            }
+            //}
+            //else
+            //{
+            //    return BadRequest("Not authorized");
+            //}
         }
         
 
@@ -220,6 +220,48 @@ namespace BudgetApplication.Controllers
             {
                 return BadRequest("Not authorized");
             }
+        }
+
+        [HttpGet]
+        [ResponseType(typeof(Transactions))]
+        public IHttpActionResult View(int id)
+        {
+            var userId = User.Identity.GetUserId();
+
+            var account = db.Accounts.FirstOrDefault(p => p.Id == id);
+
+            if (account == null)
+            {
+                return BadRequest("Account doesn't exist");
+            }
+
+            var houseHold = account.HouseHold;
+
+            //if (houseHold.CreatorId == userId ||
+            //    houseHold.HouseHoldUser.Any(p => p.Id == userId))
+            //{
+                var transactions = account.Transactions;
+
+                var categoryViewModel = transactions
+                    .Select(p => new TransactionViewModel
+                    {
+                        Id = p.Id,
+                        Amount = p.Amount,
+                        CategoryId = p.Category.Id,
+                        CategoryName = p.Category.Name,
+                        Date = p.Date,
+                        Description = p.Description,
+                        EnteredById = p.EnteredById,
+                        EnteredByName = p.EnteredBy.UserName,
+                        IsVoided = p.IsVoided
+                    }).ToList();
+
+                return Ok(categoryViewModel);
+            //}
+            //else
+            //{
+            //    return BadRequest("Not authorized");
+            //}
         }
 
         protected override void Dispose(bool disposing)

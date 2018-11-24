@@ -85,9 +85,9 @@ namespace BudgetApplication.Controllers
             {
                 return NotFound();
             }
-            if (household.CreatorId == creatorId ||
-                household.HouseHoldUser.Any(p => p.Id == creatorId))
-            {
+            //if (household.CreatorId == creatorId ||
+            //    household.HouseHoldUser.Any(p => p.Id == creatorId))
+            //{
                 var category = new Categories();
                 category.Name = model.Name;
                 category.HouseHoldId = model.HouseHoldId;
@@ -96,11 +96,11 @@ namespace BudgetApplication.Controllers
                 db.SaveChanges();
 
                 return Ok();
-            }
-            else
-            {
-                return BadRequest("Not authorized");
-            }
+            //}
+            //else
+            //{
+            //    return BadRequest("Not authorized");
+            //}
         }
 
         [HttpGet]
@@ -149,6 +149,35 @@ namespace BudgetApplication.Controllers
             {
                 return BadRequest("Not Found");
             }
+        }
+
+        [HttpGet]
+        [ResponseType(typeof(Categories))]
+        public IHttpActionResult View(int id)
+        {
+            var userId = User.Identity.GetUserId();
+
+            var houseHold = db.HouseHolds
+                .FirstOrDefault(p => p.Id == id);
+
+            //if (houseHold.CreatorId == userId ||
+            //    houseHold.HouseHoldUser.Any(p => p.Id == userId))
+            //{
+            var categories = houseHold.Categories;
+
+            var categoryViewModel = categories
+                .Select(p => new CategoryViewModel
+                {
+                    Id = p.Id,
+                    Name = p.Name
+                }).ToList();
+
+            return Ok(categoryViewModel);
+            //}
+            //else
+            //{
+            //    return BadRequest("Not authorized");
+            //}
         }
 
         protected override void Dispose(bool disposing)

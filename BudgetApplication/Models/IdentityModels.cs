@@ -48,7 +48,7 @@ namespace BudgetApplication.Models
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Transactions>()
-               .HasRequired(p => p.category)
+               .HasRequired(p => p.Category)
                .WithMany(p => p.Transactions)
                .WillCascadeOnDelete(false);
         }
